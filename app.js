@@ -1,4 +1,4 @@
-// Full absolute URLs – no bare 'three' specifiers
+// Use full CDN URLs for everything – no import map needed
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js';
 
@@ -19,7 +19,7 @@ const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
 dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
 
-// Fallback spinning red cube if duck fails
+// Fallback red cube
 const fallbackGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
 const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
 const fallback = new THREE.Mesh(fallbackGeo, fallbackMat);
@@ -34,36 +34,36 @@ let spinX = 0;
 let spinY = 0;
 let spinZ = 0;
 
+// Use Khronos GitHub raw URL for Duck.glb (confirmed working alternative)
 const loader = new GLTFLoader();
 loader.load(
-  'https://threejs.org/examples/models/gltf/Duck.glb',
+  'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb',
   (gltf) => {
     duck = gltf.scene;
     scene.add(duck);
     duck.scale.set(0.05, 0.05, 0.05);
     duck.position.y = -0.8;
-    duck.rotation.y = Math.PI; // face camera
+    duck.rotation.y = Math.PI;
     scene.remove(fallback);
-    console.log('✅ Duck model loaded!');
+    console.log('✅ Duck loaded from Khronos repo!');
   },
   (progress) => {
-    console.log(`Loading duck: ${(progress.loaded / progress.total * 100).toFixed(1)}%`);
+    console.log(`Loading: ${(progress.loaded / progress.total * 100 || 0).toFixed(1)}%`);
   },
   (err) => {
-    console.error('❌ Duck model failed to load:', err);
+    console.error('❌ Model load failed:', err);
   }
 );
 
-// New random move (infinite variety)
+// New unique move
 function newMove() {
-  bounceHeight = 1.8 + Math.random() * 5;     // taller/lower bounces
-  bounceSpeed  = 2.5 + Math.random() * 6;     // faster/slower
+  bounceHeight = 1.8 + Math.random() * 5;
+  bounceSpeed  = 2.5 + Math.random() * 6;
   spinX = (Math.random() - 0.5) * 0.25;
   spinY = (Math.random() - 0.5) * 0.30;
   spinZ = (Math.random() - 0.5) * 0.20;
 }
 
-// Animation loop
 function animate(time = 0) {
   requestAnimationFrame(animate);
 
@@ -75,14 +75,13 @@ function animate(time = 0) {
       duck.rotation.y += spinY;
       duck.rotation.z += spinZ;
 
-      // End after ~one full bounce
       if (t > (Math.PI / bounceSpeed) * 1.2) {
         isAnimating = false;
         duck.position.y = -0.8;
       }
     }
   } else {
-    fallback.rotation.y += 0.01; // visual feedback that scene is alive
+    fallback.rotation.y += 0.01;
   }
 
   renderer.render(scene, camera);
@@ -90,14 +89,12 @@ function animate(time = 0) {
 
 animate();
 
-// Resize
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Click to bounce!
 renderer.domElement.addEventListener('click', () => {
   if (!isAnimating && duck) {
     isAnimating = true;
